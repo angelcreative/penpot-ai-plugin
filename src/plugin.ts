@@ -1,5 +1,24 @@
 import type { Penpot } from '@penpot/plugin-types';
 
+// Declaración de Penpot como variable global
+declare const Penpot: {
+  storage: {
+    getItem: <T>(key: string) => Promise<T | null>;
+    setItem: (key: string, value: any) => Promise<void>;
+  };
+  ui: {
+    showUI: (options: { width: number; height: number }, html: string) => Promise<void>;
+    showToast: (message: string) => Promise<void>;
+    close: () => void;
+    on: (event: string, callback: (msg: any) => void) => void;
+    postMessage: (message: { type: string; script: string }) => void;
+  };
+  content: {
+    createRectangle: (options: { position: { x: number; y: number }; size: { width: number; height: number }; style: any }) => Promise<void>;
+    createText: (options: { position: { x: number; y: number }; text: string; style: any }) => Promise<void>;
+  };
+};
+
 // Constantes de configuración
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_MODEL = 'gpt-4';
@@ -11,18 +30,29 @@ type MessagePayload = { type: string; data: string };
 
 type UIMessage = { pluginMessage?: MessagePayload };
 
+// Verificar que Penpot está disponible
+if (typeof Penpot === 'undefined') {
+  console.error('Penpot no está disponible en el entorno actual');
+  throw new Error('Este plugin requiere ejecutarse dentro del entorno de Penpot');
+}
+
 // Entrada del plugin
 async function main() {
-  const foundations = await Penpot.storage.getItem<Foundations>('foundations');
-  if (!foundations) {
-    return requestFoundationsUpload();
+  try {
+    const foundations = await Penpot.storage.getItem<Foundations>('foundations');
+    if (!foundations) {
+      return requestFoundationsUpload();
+    }
+    const apiKey = await Penpot.storage.getItem<string>('openai_api_key');
+    if (!apiKey) {
+      return requestApiKeyInput();
+    }
+    await Penpot.ui.showToast('🎉 Plugin listo. Ingresa un prompt para generar UI.');
+    await requestPromptInput();
+  } catch (err) {
+    console.error('Error en main:', err);
+    throw err;
   }
-  const apiKey = await Penpot.storage.getItem<string>('openai_api_key');
-  if (!apiKey) {
-    return requestApiKeyInput();
-  }
-  await Penpot.ui.showToast('🎉 Plugin listo. Ingresa un prompt para generar UI.');
-  await requestPromptInput();
 }
 
 // Pide JSON de foundations
