@@ -3,7 +3,7 @@
     "description": "Generates UI components in Penpot using OpenAI and design foundations.",
     "version": "0.1.0",
     "manifest_version": 1,
-    "code": "plugin.js",
+    "code": "dist/plugin.js",
     "icon": "icon.png",
     "permissions": [
       "content:write",
