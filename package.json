@@ -1,0 +1,17 @@
+{
+  "name": "penpotplugin",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild src/plugin.ts --bundle --outfile=dist/plugin.js --platform=neutral --external:@penpot/plugin-types"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@penpot/plugin-types": "^1.2.0",
+    "esbuild": "^0.25.3",
+    "typescript": "^5.8.3"
+  }
+}

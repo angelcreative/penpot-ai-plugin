@@ -1,0 +1,17 @@
+{
+    "name": "AI UI Generator",
+    "description": "Generates UI components in Penpot using OpenAI and design foundations.",
+    "version": "0.1.0",
+    "manifest_version": 1,
+    "code": "plugin.js",
+    "icon": "icon.png",
+    "permissions": [
+      "content:write",
+      "ui:show",
+      "storage:read",
+      "storage:write",
+      "library:read",
+      "network:request"
+    ]
+  }
+  
