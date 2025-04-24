@@ -1,6 +1,6 @@
 import type { Penpot as PenpotType } from '@penpot/plugin-types';
 
-declare const penpot: PenpotType;
+declare const Penpot: PenpotType;
 
 // Constantes de configuración
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
@@ -15,15 +15,15 @@ type UIMessage = { pluginMessage?: MessagePayload };
 // Entrada del plugin
 async function main() {
   try {
-    const foundations = await penpot.storage.getItem<Foundations>('foundations');
+    const foundations = await Penpot.storage.getItem<Foundations>('foundations');
     if (!foundations) {
       return requestFoundationsUpload();
     }
-    const apiKey = await penpot.storage.getItem<string>('openai_api_key');
+    const apiKey = await Penpot.storage.getItem<string>('openai_api_key');
     if (!apiKey) {
       return requestApiKeyInput();
     }
-    await penpot.ui.showToast('🎉 Plugin listo. Ingresa un prompt para generar UI.');
+    await Penpot.ui.showToast('🎉 Plugin listo. Ingresa un prompt para generar UI.');
     await requestPromptInput();
   } catch (err) {
     console.error('Error en main:', err);
@@ -39,23 +39,23 @@ async function requestFoundationsUpload() {
       <button id="load" disabled>Cargar Foundations</button>
     </div>
   `;
-  await penpot.ui.showUI({ width: 300, height: 200 }, html);
-  penpot.ui.on('message', async (msg: UIMessage) => {
+  await Penpot.ui.showUI({ width: 300, height: 200 }, html);
+  Penpot.ui.on('message', async (msg: UIMessage) => {
     const payload = msg.pluginMessage;
     if (payload?.type === 'foundations-json') {
       try {
         const data = JSON.parse(payload.data) as Foundations;
-        await penpot.storage.setItem('foundations', data);
-        await penpot.ui.showToast('✅ Foundations importados');
-        penpot.ui.close();
+        await Penpot.storage.setItem('foundations', data);
+        await Penpot.ui.showToast('✅ Foundations importados');
+        Penpot.ui.close();
         main();
       } catch (err) {
         console.error('JSON parsing error:', err);
-        await penpot.ui.showToast('❌ Error al parsear JSON');
+        await Penpot.ui.showToast('❌ Error al parsear JSON');
       }
     }
   });
-  penpot.ui.postMessage({
+  Penpot.ui.postMessage({
     type: 'inject-script',
     script: `
       const input = document.getElementById('file');
@@ -80,17 +80,17 @@ async function requestApiKeyInput() {
       <button id="save" disabled>Guardar</button>
     </div>
   `;
-  await penpot.ui.showUI({ width: 300, height: 180 }, html);
-  penpot.ui.on('message', async (msg: UIMessage) => {
+  await Penpot.ui.showUI({ width: 300, height: 180 }, html);
+  Penpot.ui.on('message', async (msg: UIMessage) => {
     const payload = msg.pluginMessage;
     if (payload?.type === 'api-key') {
-      await penpot.storage.setItem('openai_api_key', payload.data);
-      await penpot.ui.showToast('🔑 API Key guardada');
-      penpot.ui.close();
+      await Penpot.storage.setItem('openai_api_key', payload.data);
+      await Penpot.ui.showToast('🔑 API Key guardada');
+      Penpot.ui.close();
       main();
     }
   });
-  penpot.ui.postMessage({
+  Penpot.ui.postMessage({
     type: 'inject-script',
     script: `
       const input = document.getElementById('key');
@@ -110,15 +110,15 @@ async function requestPromptInput() {
       <button id="go" disabled>Generar</button>
     </div>
   `;
-  await penpot.ui.showUI({ width: 350, height: 260 }, html);
-  penpot.ui.on('message', async (msg: UIMessage) => {
+  await Penpot.ui.showUI({ width: 350, height: 260 }, html);
+  Penpot.ui.on('message', async (msg: UIMessage) => {
     const payload = msg.pluginMessage;
     if (payload?.type === 'user-prompt') {
-      penpot.ui.close();
+      Penpot.ui.close();
       await generateUI(payload.data);
     }
   });
-  penpot.ui.postMessage({
+  Penpot.ui.postMessage({
     type: 'inject-script',
     script: `
       const input = document.getElementById('prompt');
@@ -132,9 +132,10 @@ async function requestPromptInput() {
 // Genera UI llamando a OpenAI y crea nodos con manejo de errores
 async function generateUI(prompt: string) {
   try {
-    const foundations = await penpot.storage.getItem<Foundations>('foundations')!;
-    const apiKey = await penpot.storage.getItem<string>('openai_api_key')!;
-    const systemMessage = `Eres un asistente que genera un array JSON de nodos UI usando estos foundations:\n${JSON.stringify(foundations)}`;
+    const foundations = await Penpot.storage.getItem<Foundations>('foundations')!;
+    const apiKey = await Penpot.storage.getItem<string>('openai_api_key')!;
+    const systemMessage = `Eres un asistente que genera un array JSON de nodos UI usando estos foundations:
+${JSON.stringify(foundations)}`;
     const response = await fetch(OPENAI_URL, {
       method: 'POST',
       headers: {
@@ -150,7 +151,7 @@ async function generateUI(prompt: string) {
     await placeNodes(ui.nodes);
   } catch (err) {
     console.error('Error en generateUI:', err);
-    await penpot.ui.showToast('❌ Error generando UI');
+    await Penpot.ui.showToast('❌ Error generando UI');
   }
 }
 
@@ -159,9 +160,9 @@ async function placeNodes(nodes: OpenAIResponse['nodes']) {
   for (const nodo of nodes) {
     try {
       if (nodo.type === 'RECTANGLE') {
-        await penpot.content.createRectangle({ position: nodo.position, size: nodo.size!, style: nodo.style });
+        await Penpot.content.createRectangle({ position: nodo.position, size: nodo.size!, style: nodo.style });
       } else if (nodo.type === 'TEXT') {
-        await penpot.content.createText({ position: nodo.position, text: nodo.content || '', style: nodo.style });
+        await Penpot.content.createText({ position: nodo.position, text: nodo.content || '', style: nodo.style });
       }
     } catch (err) {
       console.error('Error creando nodo:', nodo, err);
